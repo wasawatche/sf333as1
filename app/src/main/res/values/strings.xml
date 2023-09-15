@@ -2,5 +2,5 @@
     <string name="app_name">Number Guessing Game</string>
     <string name="title">Try to guess the number I\'m thinking of from 1–1000!</string>
     <string name="placeholder">Your Guess</string>
-    <string name="playagain">PLAY AGAIN</string>
+    <string name="hint">%s</string>
 </resources>
