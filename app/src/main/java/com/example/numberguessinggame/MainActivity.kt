@@ -70,11 +70,11 @@ class MainActivity : ComponentActivity() {
 
 private fun hintingNum(guessedInput: String, guessedAmount: Int, rand: Int): String {
     if (rand == guessedAmount) {
-        return "Correct"
+        return "You win!"
     } else if (rand > guessedAmount && guessedInput != "") {
-        return "Hint: It's higher"
+        return "Hint: It's higher!"
     } else if (rand < guessedAmount) {
-        return "Hint: It's lower"
+        return "Hint: It's lower!"
     } else {
         return ""
     }
@@ -159,13 +159,17 @@ fun NumberGuessingGameApp(randNum: Int) {
                     .height(100.dp)
             )
             Text(stringResource(R.string.hint, hinted))
+
+            // Display for Testing
 //            Text(randNum.toString())
 //            Text(randNum2.toString())
 //            Text(count.toString())
+
             Text(stringResource(R.string.count, countText))
+
             Button(
                 onClick = {
-                    if (guessedInput != "") {
+                    if (guessedInput != "" && buttonState != "PLAY AGAIN") {
                         count++
                     }
                     if (iteration == 0) {
@@ -174,23 +178,26 @@ fun NumberGuessingGameApp(randNum: Int) {
                             guessedInput = ""
                             buttonState = "PLAY AGAIN"
                             iteration++
+                            count--
                             countText = displayCount(count)
                             count = 0
                         }
                     } else {
+                        hinted = hintingNum(guessedInput, guessedAmount, randNum2)
                         if (buttonState == "PLAY AGAIN") {
                             randNum2 = Random.nextInt(0, 1001)
-                            buttonState = "GUESS"
+                            hinted = ""
                             countText = ""
+                            buttonState = "GUESS"
                         }
                         else if (winOrNot(guessedAmount, randNum2)) {
                             guessedInput = ""
                             buttonState = "PLAY AGAIN"
                             iteration++
+                            count--
                             countText = displayCount(count)
                             count = 0
                         }
-                        hinted = hintingNum(guessedInput, guessedAmount, randNum2)
                     }
                     guessedInput = ""
                           },
