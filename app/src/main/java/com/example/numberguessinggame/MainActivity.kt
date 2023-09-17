@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.FontWeight.Companion.Bold
 import androidx.compose.ui.text.style.TextAlign.Companion.Center
 import com.example.numberguessinggame.ui.theme.NumberGuessingGameTheme
 import kotlin.random.Random
@@ -58,7 +59,8 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NumberGuessingGameApp()
+                    var randNum = Random.nextInt(0, 1001)
+                    NumberGuessingGameApp(randNum)
                 }
             }
         }
@@ -66,33 +68,51 @@ class MainActivity : ComponentActivity() {
 }
 
 
-private fun matchingGuessedNum(guessedAmount: Int, rand: Int): String {
+private fun hintingNum(guessedInput: String, guessedAmount: Int, rand: Int): String {
     if (rand == guessedAmount) {
         return "Correct"
-    } else if (rand >= guessedAmount) {
+    } else if (rand > guessedAmount && guessedInput != "") {
         return "Hint: It's higher"
+    } else if (rand < guessedAmount) {
+        return "Hint: It's lower"
+    } else {
+        return ""
     }
-    return "Hint: It's lower"
 }
 
-private fun generateRand(hinted: String, randNum: Int): Int {
-    if (hinted === "Correct" || randNum === 0) {
-        return Random.nextInt(0, 11)
+private fun winOrNot(guessedAmount: Int, rand: Int): Boolean {
+    if (rand == guessedAmount) {
+        return true
     }
-    return randNum
+    return false
 }
 
+private fun displayCount(count: Int): String{
+    return "You take " + count.toString() + " guesses to win this round"
+}
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun NumberGuessingGameApp() {
+fun NumberGuessingGameApp(randNum: Int) {
     var guessedInput by remember { mutableStateOf("") }
     var hinted by remember { mutableStateOf("")}
-    var randNum = 0
-    randNum = generateRand(hinted, randNum)
-    var buttonState = "PLAY"
+
+    // "iteration" is for tracking iteration
+    var iteration by remember { mutableStateOf(0)}
+
+    // "count" is for counting how many guess it take to win in each iteration
+    var count by remember { mutableStateOf(0)}
+    var countText by remember { mutableStateOf("")}
+
+    // "randNum2" is a random number that this game will be using after the first iteration
+    var randNum2 by remember { mutableStateOf(0)}
+    var buttonState by remember { mutableStateOf("")}
 
     val guessedAmount = guessedInput.toIntOrNull() ?: 0
+
+    if (iteration == 0) {
+        buttonState = "GUESS"
+    }
 
     Scaffold (
         topBar = {
@@ -106,12 +126,16 @@ fun NumberGuessingGameApp() {
             horizontalAlignment = Alignment.CenterHorizontally
         )
         {
+            Spacer(
+                modifier = Modifier
+                    .height(5.dp)
+            )
             Text(
                 text = stringResource(R.string.title),
                 style = TextStyle(
                     fontSize = 25.sp,
                     fontWeight = FontWeight(500),
-                    textAlign = TextAlign.Center
+                    textAlign = Center
                 )
             )
             Spacer(
@@ -135,11 +159,40 @@ fun NumberGuessingGameApp() {
                     .height(100.dp)
             )
             Text(stringResource(R.string.hint, hinted))
-            Text(randNum.toString())
+//            Text(randNum.toString())
+//            Text(randNum2.toString())
+//            Text(count.toString())
+            Text(stringResource(R.string.count, countText))
             Button(
                 onClick = {
-                    hinted = matchingGuessedNum(guessedAmount, randNum)
-                    buttonState = "PLAY AGAIN"
+                    if (guessedInput != "") {
+                        count++
+                    }
+                    if (iteration == 0) {
+                        hinted = hintingNum(guessedInput, guessedAmount, randNum)
+                        if (winOrNot(guessedAmount, randNum)) {
+                            guessedInput = ""
+                            buttonState = "PLAY AGAIN"
+                            iteration++
+                            countText = displayCount(count)
+                            count = 0
+                        }
+                    } else {
+                        if (buttonState == "PLAY AGAIN") {
+                            randNum2 = Random.nextInt(0, 1001)
+                            buttonState = "GUESS"
+                            countText = ""
+                        }
+                        else if (winOrNot(guessedAmount, randNum2)) {
+                            guessedInput = ""
+                            buttonState = "PLAY AGAIN"
+                            iteration++
+                            countText = displayCount(count)
+                            count = 0
+                        }
+                        hinted = hintingNum(guessedInput, guessedAmount, randNum2)
+                    }
+                    guessedInput = ""
                           },
                 modifier = Modifier.wrapContentWidth(Alignment.CenterHorizontally)
             ) {
@@ -154,23 +207,21 @@ fun NumberGuessingGameApp() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopAppBar(modifier: Modifier = Modifier) {
-    CenterAlignedTopAppBar(
-        {
             Row (
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.Magenta)
-                    .padding(50.dp)
+                    .padding(20.dp)
                 ,
             ) {
                 Text (
                     text = stringResource(R.string.app_name),
                     color = Color.White,
-                    textAlign = TextAlign.Start
+                    textAlign = TextAlign.Start,
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight(500)
                 )
             }
-        }
-    )
 }
 
 @Composable
@@ -192,8 +243,3 @@ fun EditNumberField(
 }
 
 
-@Preview
-@Composable
-fun Preview() {
-    NumberGuessingGameApp()
-}

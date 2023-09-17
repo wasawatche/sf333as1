@@ -3,4 +3,5 @@
     <string name="title">Try to guess the number I\'m thinking of from 1–1000!</string>
     <string name="placeholder">Your Guess</string>
     <string name="hint">%s</string>
+    <string name="count">%s</string>>
 </resources>
